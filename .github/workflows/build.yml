@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     runs-on: macos-14
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,11 +27,11 @@ jobs:
           APP_NAME="RemoteVRAMMonitor"
           BUILD_DIR=".build/release"
           APP_BUNDLE="$APP_NAME.app"
-          
+
           mkdir -p "$APP_BUNDLE/Contents/MacOS"
           mkdir -p "$APP_BUNDLE/Contents/Resources"
           cp "$BUILD_DIR/$APP_NAME" "$APP_BUNDLE/Contents/MacOS/"
-          
+
           cat > "$APP_BUNDLE/Contents/Info.plist" <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -54,7 +54,7 @@ jobs:
           </dict>
           </plist>
           EOF
-          
+
           chmod +x "$APP_BUNDLE/Contents/MacOS/$APP_NAME"
 
       - name: Upload Artifact

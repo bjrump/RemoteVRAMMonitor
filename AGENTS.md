@@ -4,7 +4,7 @@ This file provides context for AI coding assistants working on this project.
 
 ## Project Overview
 
-**RemoteVRAMMonitor** is a macOS menu bar application that monitors GPU memory usage on remote servers via SSH. It's built with Swift 6.2 and SwiftUI.
+**RemoteVRAMMonitor** is a macOS menu bar application that monitors GPU memory usage on remote servers via SSH. It's built with Swift and SwiftUI.
 
 ## Architecture
 
@@ -85,4 +85,4 @@ None – the project uses only Apple frameworks:
 ## Platform Requirements
 
 - macOS 13.0 (Ventura) or later
-- Swift 6.2+
+- Swift 5.9+
