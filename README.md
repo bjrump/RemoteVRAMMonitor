@@ -6,9 +6,7 @@
 
 A lightweight macOS menu bar app that displays real-time GPU memory usage from remote servers via SSH.
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Menu%20Bar-GPU%20Monitor-green?style=for-the-badge" alt="Menu Bar GPU Monitor">
-</p>
+<img width="75" height="30" alt="Screenshot 2026-01-14 at 15 14 05" src="https://github.com/user-attachments/assets/45ea9e57-a4dd-4a46-ad29-0b62b6290aa0" />
 
 ## Features
 
