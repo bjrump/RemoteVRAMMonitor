@@ -1,33 +1,95 @@
 # Remote VRAM Monitor
 
-Ein einfaches Mac Menu Bar Tool, um die VRAM-Auslastung von Grafikkarten auf einem entfernten Server anzuzeigen.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Platform](https://img.shields.io/badge/platform-macOS-blue.svg)](https://www.apple.com/macos)
+[![Swift](https://img.shields.io/badge/Swift-6.2-orange.svg)](https://swift.org)
 
-## Funktionen
-- Zeigt die VRAM-Auslastung (in %) von allen Grafikkarten in der Menu Bar an.
-- Nutzt `ssh` und `nvidia-smi` (keine Installation auf dem Server nötig).
-- Konfigurierbarer SSH Host und User.
+A lightweight macOS menu bar app that displays real-time GPU memory usage from remote servers via SSH.
 
-## Voraussetzungen
-- SSH-Zugang zum Server (am besten mit SSH Key, damit kein Passwort eingegeben werden muss).
-- `nvidia-smi` muss auf dem Server installiert und im PATH verfügbar sein.
+<p align="center">
+  <img src="https://img.shields.io/badge/Menu%20Bar-GPU%20Monitor-green?style=for-the-badge" alt="Menu Bar GPU Monitor">
+</p>
+
+## Features
+
+- 📊 **Real-time monitoring** – GPU memory and utilization updated every 5 seconds
+- 🖥️ **Multi-GPU support** – Monitor up to 8 GPUs simultaneously in the menu bar
+- 🔒 **Secure** – Uses your existing SSH keys, no passwords stored
+- ⚡ **Lightweight** – Minimal resource usage with SSH connection multiplexing
+- 🎨 **Color-coded** – Quick visual feedback (white/orange/red based on usage)
+
+## What Runs on the Server
+
+The app executes only one read-only command via SSH:
+
+```bash
+nvidia-smi --query-gpu=memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits
+```
+
+This returns only numeric GPU statistics (memory in MB, utilization in %). No sensitive data, no file access, no system modifications.
+
+## Requirements
+
+- **macOS 13.0** (Ventura) or later
+- **SSH access** to your server (key-based authentication recommended)
+- **nvidia-smi** installed on the remote server
 
 ## Installation
 
-1. Terminal öffnen.
-2. Projekt kompilieren und App erstellen:
+### From Source
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/bjrump/RemoteVRAMMonitor.git
+   cd RemoteVRAMMonitor
+   ```
+
+2. Build and create the app bundle:
    ```bash
    ./create_app.sh
    ```
-3. Die erstellte `RemoteVRAMMonitor.app` in den "Programme"-Ordner verschieben.
 
-## Konfiguration
+3. Move `RemoteVRAMMonitor.app` to your Applications folder.
 
-1. Starte die App.
-2. In der Menu Bar steht zunächst "Setup Required".
-3. Klicke darauf und wähle "Settings" (oder drücke Cmd+,).
-4. Gib deinen SSH User und Hostnamen ein (z.B. `benediktrump` und `myserver.local`).
-5. Klicke "Save & Refresh".
+## Configuration
 
-## Hinweise
-- Die App aktualisiert sich alle 5 Sekunden.
-- Wenn `ssh` ein Passwort benötigt, funktioniert die App nicht korrekt. Richte SSH Keys ein (`ssh-copy-id user@host`).
+1. Launch the app – you'll see a menu bar icon
+2. Click the icon and select **Settings** (or press `⌘,`)
+3. Enter your SSH username and hostname
+4. Click **Save & Refresh**
+
+### SSH Key Setup
+
+If you haven't set up SSH keys yet:
+
+```bash
+# Generate a key (if you don't have one)
+ssh-keygen -t ed25519
+
+# Copy your key to the server
+ssh-copy-id user@your-server.com
+```
+
+## Architecture
+
+```
+Sources/RemoteVRAMMonitor/
+├── RemoteVRAMMonitor.swift  # SwiftUI app, menu bar UI, settings view
+├── VRAMMonitor.swift        # State management, polling timer
+├── SSHClient.swift          # SSH connection, nvidia-smi parsing
+└── Configuration.swift      # User settings persistence
+```
+
+## Technical Details
+
+- **Polling interval:** 5 seconds
+- **SSH multiplexing:** Connections persist for 5 minutes to reduce overhead
+- **Config location:** `~/.remote_vram_config.json`
+
+## License
+
+This project is licensed under the MIT License – see the [LICENSE](LICENSE) file for details.
+
+## Contributing
+
+Contributions are welcome! Feel free to open issues or submit pull requests.
