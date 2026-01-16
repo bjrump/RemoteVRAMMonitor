@@ -115,6 +115,33 @@ struct ContentView: View {
             
             if !monitor.gpus.isEmpty {
                 Divider()
+                
+                HStack {
+                    Image(systemName: "chart.xyaxis.line")
+                    Text("All GPUs History")
+                    Spacer()
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 4)
+                .background(hoveredGPUIndex == -1 ? Color.secondary.opacity(0.2) : Color.clear)
+                .cornerRadius(4)
+                .onHover { isHovering in
+                    handleHover(isHovering: isHovering, index: -1)
+                }
+                .popover(isPresented: Binding(
+                    get: { hoveredGPUIndex == -1 },
+                    set: { _ in }
+                ), arrowEdge: .trailing) {
+                    CombinedHistoryGraphView(
+                        history: monitor.history,
+                        timeWindow: $monitor.selectedTimeWindow,
+                        onHover: { isHovering in
+                            handleHover(isHovering: isHovering, index: -1)
+                        }
+                    )
+                }
+            
+                Divider()
             }
             
             HStack {
