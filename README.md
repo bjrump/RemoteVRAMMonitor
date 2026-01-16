@@ -8,7 +8,6 @@ A lightweight macOS menu bar app that displays real-time GPU memory usage from
 remote servers via SSH.
 
 <img width="300" height="120" alt="Screenshot 2026-01-14 at 15 14 05" src="https://github.com/user-attachments/assets/45ea9e57-a4dd-4a46-ad29-0b62b6290aa0" />
-<img width="798" height="420" alt="image" src="https://github.com/user-attachments/assets/5cde0e76-91a0-4d39-93a6-28c4746ef040" />
 <img width="789" height="536" alt="image" src="https://github.com/user-attachments/assets/c56e32c8-c2c6-4092-9b01-31d8e5416bd1" />
 
 
