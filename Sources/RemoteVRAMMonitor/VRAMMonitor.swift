@@ -1,6 +1,26 @@
 import Foundation
 import SwiftUI
 
+enum TimeWindow: String, CaseIterable, Identifiable, Codable {
+    case oneMinute = "1m"
+    case fiveMinutes = "5m"
+    case thirtyMinutes = "30m"
+    case eightHours = "8h"
+    case oneDay = "1d"
+    
+    var id: String { rawValue }
+    
+    var duration: TimeInterval {
+        switch self {
+        case .oneMinute: return 60
+        case .fiveMinutes: return 300
+        case .thirtyMinutes: return 1800
+        case .eightHours: return 8 * 3600
+        case .oneDay: return 24 * 3600
+        }
+    }
+}
+
 @MainActor
 class VRAMMonitor: ObservableObject {
     @Published var gpus: [GPUInfo] = []
@@ -9,6 +29,14 @@ class VRAMMonitor: ObservableObject {
     @Published var isConnected: Bool = false
     @Published var lastError: String? = nil
     @Published var lastRawOutput: String = ""
+    @Published var selectedTimeWindow: TimeWindow = .oneDay {
+        didSet {
+            if selectedTimeWindow != config.timeWindow {
+                config.timeWindow = selectedTimeWindow
+                config.save()
+            }
+        }
+    }
     
     private var client: SSHClient
     private var timer: Timer?
@@ -20,6 +48,7 @@ class VRAMMonitor: ObservableObject {
     init() {
         let loadedConfig = AppConfig.load()
         self.config = loadedConfig
+        self.selectedTimeWindow = loadedConfig.timeWindow
         self.client = SSHClient(user: loadedConfig.user, host: loadedConfig.host)
         
         startMonitoring()

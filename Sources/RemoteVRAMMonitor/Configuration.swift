@@ -3,6 +3,7 @@ import Foundation
 struct AppConfig: Codable {
     var user: String
     var host: String
+    var timeWindow: TimeWindow = .oneDay
     
     static let defaultPath = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".remote_vram_config.json")
     
@@ -11,7 +12,7 @@ struct AppConfig: Codable {
             let data = try Data(contentsOf: defaultPath)
             return try JSONDecoder().decode(AppConfig.self, from: data)
         } catch {
-            return AppConfig(user: "user", host: "hostname")
+            return AppConfig(user: "user", host: "hostname", timeWindow: .oneDay)
         }
     }
     

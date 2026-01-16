@@ -105,6 +105,7 @@ struct ContentView: View {
                         HistoryGraphView(
                             history: monitor.history[gpu.index] ?? [],
                             gpuIndex: gpu.index,
+                            timeWindow: $monitor.selectedTimeWindow,
                             onHover: { isHovering in
                                 handleHover(isHovering: isHovering, index: gpu.index)
                             }

@@ -4,29 +4,8 @@ import Charts
 struct HistoryGraphView: View {
     let history: [VRAMMonitor.GPUHistoryPoint]
     let gpuIndex: Int
+    @Binding var timeWindow: TimeWindow
     var onHover: ((Bool) -> Void)?
-    
-    @State private var timeWindow: TimeWindow = .oneDay
-    
-    enum TimeWindow: String, CaseIterable, Identifiable {
-        case oneMinute = "1m"
-        case fiveMinutes = "5m"
-        case thirtyMinutes = "30m"
-        case eightHours = "8h"
-        case oneDay = "1d"
-        
-        var id: String { rawValue }
-        
-        var duration: TimeInterval {
-            switch self {
-            case .oneMinute: return 60
-            case .fiveMinutes: return 300
-            case .thirtyMinutes: return 1800
-            case .eightHours: return 8 * 3600
-            case .oneDay: return 24 * 3600
-            }
-        }
-    }
     
     var filteredHistory: [VRAMMonitor.GPUHistoryPoint] {
         let cutoff = Date().addingTimeInterval(-timeWindow.duration)
