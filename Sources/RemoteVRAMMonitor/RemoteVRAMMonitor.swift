@@ -28,9 +28,11 @@ struct RemoteVRAMMonitorApp: App {
         }
         .menuBarExtraStyle(.window)
         
-        Settings {
+        WindowGroup("Settings", id: "settings") {
             SettingsView(monitor: monitor)
+                .frame(minWidth: 450, minHeight: 300)
         }
+        .windowResizability(.contentSize)
     }
     
     @MainActor
@@ -51,6 +53,7 @@ struct ContentView: View {
     @ObservedObject var monitor: VRAMMonitor
     @Binding var hoveredGPUIndex: Int?
     @State private var hoverTask: Task<Void, Never>?
+    @Environment(\.openWindow) var openWindow
     
     func handleHover(isHovering: Bool, index: Int) {
         if isHovering {
@@ -123,11 +126,8 @@ struct ContentView: View {
                 Spacer()
                 
                 Button("Settings") {
-                    if #available(macOS 14.0, *) {
-                        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-                    } else {
-                        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-                    }
+                    openWindow(id: "settings")
+                    NSApp.activate(ignoringOtherApps: true)
                 }
                 
                 Button("Quit") {
