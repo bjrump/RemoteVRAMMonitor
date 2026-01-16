@@ -4,13 +4,15 @@
 [![Platform](https://img.shields.io/badge/platform-macOS-blue.svg)](https://www.apple.com/macos)
 [![Swift](https://img.shields.io/badge/Swift-5.9+-orange.svg)](https://swift.org)
 
-A lightweight macOS menu bar app that displays real-time GPU memory usage from remote servers via SSH.
+A lightweight macOS menu bar app that displays real-time GPU memory usage from
+remote servers via SSH.
 
 <img width="75" height="30" alt="Screenshot 2026-01-14 at 15 14 05" src="https://github.com/user-attachments/assets/45ea9e57-a4dd-4a46-ad29-0b62b6290aa0" />
 
 ## Features
 
-- 📊 **Real-time monitoring** – GPU memory and utilization updated every 5 seconds
+- 📊 **Real-time monitoring** – GPU memory and utilization updated every 5
+  seconds
 - 🖥️ **Multi-GPU support** – Monitor up to 8 GPUs simultaneously in the menu bar
 - 🔒 **Secure** – Uses your existing SSH keys, no passwords stored
 - ⚡ **Lightweight** – Minimal resource usage with SSH connection multiplexing
@@ -24,7 +26,8 @@ The app executes only one read-only command via SSH:
 nvidia-smi --query-gpu=memory.used,memory.total,utilization.gpu --format=csv,noheader,nounits
 ```
 
-This returns only numeric GPU statistics (memory in MB, utilization in %). No sensitive data, no file access, no system modifications.
+This returns only numeric GPU statistics (memory in MB, utilization in %). No
+sensitive data, no file access, no system modifications.
 
 ## Requirements
 
@@ -37,12 +40,14 @@ This returns only numeric GPU statistics (memory in MB, utilization in %). No se
 ### From Source
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/bjrump/RemoteVRAMMonitor.git
    cd RemoteVRAMMonitor
    ```
 
 2. Build and create the app bundle:
+
    ```bash
    ./create_app.sh
    ```
@@ -86,7 +91,8 @@ Sources/RemoteVRAMMonitor/
 
 ## License
 
-This project is licensed under the MIT License – see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License – see the [LICENSE](LICENSE) file
+for details.
 
 ## Contributing
 

@@ -4,6 +4,7 @@ import SwiftUI
 @MainActor
 class VRAMMonitor: ObservableObject {
     @Published var gpus: [GPUInfo] = []
+    @Published var history: [Int: [GPUHistoryPoint]] = [:]
     @Published var config: AppConfig
     @Published var isConnected: Bool = false
     @Published var lastError: String? = nil
@@ -22,6 +23,19 @@ class VRAMMonitor: ObservableObject {
         self.client = SSHClient(user: loadedConfig.user, host: loadedConfig.host)
         
         startMonitoring()
+    }
+    
+    struct GPUHistoryPoint: Identifiable {
+        let id = UUID()
+        let date: Date
+        let memoryUsage: Int
+        let memoryTotal: Int
+        let utilization: Int
+        
+        var memoryUsagePercent: Int {
+            guard memoryTotal > 0 else { return 0 }
+            return Int((Double(memoryUsage) / Double(memoryTotal)) * 100)
+        }
     }
     
     func updateConfig(user: String, host: String) {
@@ -56,6 +70,30 @@ class VRAMMonitor: ObservableObject {
             let (fetchedGpus, raw) = try await client.fetchGPUData()
             self.gpus = fetchedGpus
             self.lastRawOutput = raw
+            
+            let now = Date()
+            for gpu in fetchedGpus {
+                let point = GPUHistoryPoint(
+                    date: now,
+                    memoryUsage: gpu.memoryUsed,
+                    memoryTotal: gpu.memoryTotal,
+                    utilization: gpu.gpuUtilization
+                )
+                
+                if history[gpu.index] == nil {
+                    history[gpu.index] = []
+                }
+                
+                history[gpu.index]?.append(point)
+                
+                let oneDayAgo = now.addingTimeInterval(-86400)
+                if let firstIndex = history[gpu.index]?.firstIndex(where: { $0.date >= oneDayAgo }) {
+                    if firstIndex > 0 {
+                        history[gpu.index]?.removeFirst(firstIndex)
+                    }
+                }
+            }
+            
             self.isConnected = true
             self.lastError = nil
         } catch {

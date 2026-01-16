@@ -3,6 +3,7 @@ import SwiftUI
 @main
 struct RemoteVRAMMonitorApp: App {
     @StateObject private var monitor = VRAMMonitor()
+    @State private var hoveredGPUIndex: Int?
     
     var iconName: String {
         if monitor.lastError != nil {
@@ -16,48 +17,7 @@ struct RemoteVRAMMonitorApp: App {
     
     var body: some Scene {
         MenuBarExtra {
-            if let error = monitor.lastError {
-                Text("Status: Error")
-                Text(error).font(.caption).foregroundColor(.red)
-                Divider()
-            } else if monitor.gpus.isEmpty {
-                 Text("Status: Connecting...")
-            }
-            
-            ForEach(monitor.gpus) { gpu in
-                let usedGB = String(format: "%.1f", Double(gpu.memoryUsed) / 1024.0)
-                let totalGB = String(format: "%.0f", Double(gpu.memoryTotal) / 1024.0)
-                
-                Button(action: {}) {
-                    Text("GPU \(gpu.index):  Mem \(gpu.usagePercentage)% (\(usedGB)/\(totalGB) GB)  |  Util \(gpu.gpuUtilization)%")
-                }
-            }
-            
-            Divider()
-            
-            Button("Refresh") {
-                Task {
-                    await monitor.refresh()
-                }
-            }
-            
-            Divider()
-            
-            if #available(macOS 14.0, *) {
-                SettingsLink {
-                    Text("Settings")
-                }
-            } else {
-                Button("Settings") {
-                    NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-                }
-            }
-            
-            Divider()
-            
-            Button("Quit") {
-                NSApplication.shared.terminate(nil)
-            }
+            ContentView(monitor: monitor, hoveredGPUIndex: $hoveredGPUIndex)
         } label: {
             if monitor.gpus.count > 0 {
                 Image(nsImage: renderIcon(gpus: monitor.gpus))
@@ -66,6 +26,7 @@ struct RemoteVRAMMonitorApp: App {
                     .symbolRenderingMode(.hierarchical)
             }
         }
+        .menuBarExtraStyle(.window)
         
         Settings {
             SettingsView(monitor: monitor)
@@ -83,6 +44,125 @@ struct RemoteVRAMMonitorApp: App {
         renderer.isOpaque = false
         
         return renderer.nsImage ?? NSImage(systemSymbolName: "memorychip", accessibilityDescription: nil)!
+    }
+}
+
+struct ContentView: View {
+    @ObservedObject var monitor: VRAMMonitor
+    @Binding var hoveredGPUIndex: Int?
+    @State private var hoverTask: Task<Void, Never>?
+    
+    func handleHover(isHovering: Bool, index: Int) {
+        if isHovering {
+            hoverTask?.cancel()
+            hoverTask = nil
+            hoveredGPUIndex = index
+        } else {
+            hoverTask?.cancel()
+            hoverTask = Task {
+                try? await Task.sleep(nanoseconds: 300_000_000) // 300ms
+                if !Task.isCancelled {
+                    hoveredGPUIndex = nil
+                }
+            }
+        }
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if let error = monitor.lastError {
+                VStack(alignment: .leading) {
+                    Text("Status: Error")
+                        .font(.headline)
+                    Text(error)
+                        .font(.caption)
+                        .foregroundColor(.red)
+                }
+                .padding(.horizontal)
+                Divider()
+            } else if monitor.gpus.isEmpty {
+                Text("Status: Connecting...")
+                    .padding(.horizontal)
+                Divider()
+            }
+            
+            ForEach(monitor.gpus) { gpu in
+                GPURow(gpu: gpu)
+                    .padding(.horizontal)
+                    .padding(.vertical, 4)
+                    .background(hoveredGPUIndex == gpu.index ? Color.secondary.opacity(0.2) : Color.clear)
+                    .cornerRadius(4)
+                    .onHover { isHovering in
+                        handleHover(isHovering: isHovering, index: gpu.index)
+                    }
+                    .popover(isPresented: Binding(
+                        get: { hoveredGPUIndex == gpu.index },
+                        set: { _ in }
+                    ), arrowEdge: .trailing) {
+                        HistoryGraphView(
+                            history: monitor.history[gpu.index] ?? [],
+                            gpuIndex: gpu.index,
+                            onHover: { isHovering in
+                                handleHover(isHovering: isHovering, index: gpu.index)
+                            }
+                        )
+                    }
+            }
+            
+            if !monitor.gpus.isEmpty {
+                Divider()
+            }
+            
+            HStack {
+                Button("Refresh") {
+                    Task {
+                        await monitor.refresh()
+                    }
+                }
+                
+                Spacer()
+                
+                Button("Settings") {
+                    if #available(macOS 14.0, *) {
+                        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+                    } else {
+                        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+                    }
+                }
+                
+                Button("Quit") {
+                    NSApplication.shared.terminate(nil)
+                }
+            }
+            .padding(.horizontal)
+            .padding(.bottom, 8)
+        }
+        .padding(.top, 8)
+        .frame(width: 320)
+        .background(Color(nsColor: .windowBackgroundColor))
+    }
+}
+
+struct GPURow: View {
+    let gpu: GPUInfo
+    
+    var body: some View {
+        let usedGB = String(format: "%.1f", Double(gpu.memoryUsed) / 1024.0)
+        let totalGB = String(format: "%.0f", Double(gpu.memoryTotal) / 1024.0)
+        
+        VStack(alignment: .leading, spacing: 2) {
+            Text("GPU \(gpu.index)")
+                .font(.headline)
+            HStack {
+                Text("Mem: \(gpu.usagePercentage)%")
+                    .foregroundColor(gpu.usagePercentage > 75 ? .red : (gpu.usagePercentage > 50 ? .orange : .primary))
+                Text("(\(usedGB)/\(totalGB) GB)")
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Text("Util: \(gpu.gpuUtilization)%")
+            }
+            .font(.caption)
+        }
     }
 }
 
